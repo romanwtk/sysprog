@@ -175,4 +175,45 @@ int main() {
 }
 \end{lstlisting}
 Sie erkennen die Definition der Konstante F{\_}CPU in der ersten Zeile. Hier legen wir fest, dass der Prozessor mit einem Takt von 16 MHz arbeitet.
+\subsection{Register und Ports}
+Unser Ziel ist es, verschiedene elektronische Bauteile an den Ports des Microcontrollers anzuschließen und mit diesem interagieren zu lassen. Dafür veranschaulichen wir uns zunächst die Pinbelegung des Boardes.
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.8]{pins.png}
+\caption{Pinbelegungen des Arduino Unos}
+\end{figure}
+Von Relevanz für das nun folgende programmatische Ansprechen der Pins sind die hier gelb hinterlegten {\glqq}Port Pin{\grqq}-Belegungen, also beispielsweise der Port \textbf{PB5} an Pin 19 bzw. Onboard-IDE 13. Wir erkennen, dass es drei mal acht dieser Ports gibt, die Register PB (für Port B), PC und PD. Diese Ports nutzen wir -- wie angesprochen -- um zusätzliche Bauteile anzusprechen. \\\\
+Für jeden dieser 24 Pins müssen wir festlegen, ob es sich um eine Input- oder Output-Port handelt. Diese Informationen halten wir im \textbf{DDR (Data direction register)} fest.
+\paragraph{Programmzeilen} \quad
+\begin{lstlisting}[language=C]
+DDRB |= (1 << DDB5);					// (1)
+
+DDRD |= (1 << DDD3) | (1 << DDD4) | (1 << DDD5);	// (2)
+
+DDRD &= ~(1 << DDD2);					// (3)
+\end{lstlisting}
+\begin{itemize}
+\item[(1)] Im Data Direction Register B verschieben wir eine 1 an die Stelle des fünften Bits, um Pin B5 als Ausgang zu definieren. Wir verwenden die Disjunktion, um andere, möglicherweise bestehende Eingaben, nicht zu überschreiben. Alternativ dazu ließe sich das Register selbstredend auch durch eine Angebe der Art \texttt{0b00100000} initialisieren, falls man beabsichtigt, nur das Bit 5 als Ausgang zu definieren.
+\item[(2)] In dieser Zeile gehen wir ähnlich vor und initialisieren das DDR D. Nun soll jedoch nicht bloß ein einzelnes Bit initialisiert, sondern drei gleichzeitig, die wir gegenseitig disjunktiv verknüpfen.
+\item[(3)] Nun bleibt noch, einen Pin wie hier als Eingang zu definieren. Da sich Nullen binär nicht schieben lassen, arbeiten wir hier mit der Negation der 1-Shift-Operation.
+\end{itemize}
+Im nächsten Kapitel betrachten wir die Möglichkeiten des Einlesens genauer, insbesondere behandeln wir dort Interrupts. \\\\
+Mit der Definition des DDRs für die entsprechenden Bits ist die Hälfte getan. Wollen wir nun die Systemspannung von 5 V an einen spezifizierten Port anlegen, gehen wir analog vor:
+\begin{lstlisting}[language=C]
+PORTB |= (1 << PORTB5);			// einschalten
+PORTB |= ~(1 << PORTB5);		// ausschalten
+\end{lstlisting}
+\subsection{Eingangssignale}
+In vielen Schaltungen verwenden wir Taster und Schalter, um auf Benutzereingaben zu reagieren. Diese Bauelemente beeinflussen die Ströme, in dem eine Spannung erst bei Tastendruck anliegt oder dann nicht mehr. Der Microcontroller liest diese Spannungen nun aus und interpretiert sie entsprechend mit 0/1 (an/aus). Für dieses Verfahren gibt es zwei Varianten:
+\begin{itemize}
+\item \textbf{Polling} -- Hierbei wertet das Programm intervallbasiert die anliegende Spannung am Pin des Bauelements aus. Dieses Vorgehen ist ressourcenintensiv und daher nach Möglichkeit zu vermeiden.
+\item \textbf{Interrupts} -- Effizienter hingegen ist es, wenn das Programm durch einen vordefinierten Interrupt unterbrochen wird. Dieses Verfahren wird im nächsten Kapitel ausführlicher behandelt.
+\end{itemize}
+Eine allgemeine Schwierigkeit beim Einlesen der Daten liegt aufgrund des \textbf{Prellens} vor. So verläuft der Spannungswechsel zwischen 0 und 5 V längst nicht so sauber, wie es wünschenswert ist. Stattdessen kann es bis zu 10 Sekunden dauern, bis ein klares Signal vorliegt,
+ da elektromagnetische Spannungen und Wellen die gemessene Spannung verändern. Um diesem Phänomen zu begegnen, werden sogenannte \textbf{Pull-Up-Widerstände} eingesetzt, die dafür sorgen, dass die Spannung im nicht gedrückten Zustand {\glqq}hochgehoben{\grqq} wird und im Falle des Tastendrucks spürbar abfällt. Der Widerstand hat hierbei häufig den Wert $4.7 \text{ k}\Omega$.
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.6]{prellen.png}
+\caption{Prellen eines Tasters}
+\end{figure}
 \end{document}
