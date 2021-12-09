@@ -33,6 +33,7 @@
 \newtheorem{lemma}{Lemma}
 \newtheorem{example}{Beispiel}
 
+\lstset{extendedchars=\true ,inputencoding=utf8}
 
 \begin{document}
 \vspace{3cm}
@@ -44,19 +45,26 @@
 \tableofcontents
 \pagebreak
 \section*{Vorwort}
-Systemnah Programmieren - Klingt komplizierter als es ist. Hier notieren wir alles Relevante aus der Vorlesung, ergänzen es um ein paar Aufgaben und Anmerkungen und bereiten uns auf die Klausur vor. Dieses Skript basiert auf der Vorlesung von Joachim Wagner an der DHBW Mannheim im Studiengang Informatik -- Cyber Security. \\\\
+Liebe Mitstudierende, \\\\
+Systemnah Programmieren -- Klingt komplizierter als es ist. Vielleicht habt ihr euch schon einmal einen Elektronik-Adventskalender oder -baukasten schenken lassen, um damit herumzuspielen, einen Feuchtigkeitssensor für Blumenerde zu entwickeln oder die intelligente Wäscheklammer? In diesem Modul widmen wir uns genau mit diesem Gebiet, dem hardwarenahen Herumtüfteln an Mikrocomputern. \\\\
+In diesem Skript notieren wir alles Relevante aus der Vorlesung, ergänzen es um ein paar Aufgaben und Anmerkungen und bereiten uns so auf die Klausur vor. Dieses Skript basiert auf der Vorlesung von Joachim Wagner an der DHBW Mannheim im Studiengang Informatik -- Cyber Security, die Passgenauigkeit für andere Dozierende oder Jahrgänge kann ich nicht beurteilen. \\\\
 \textit{Viel Erfolg!}  \\
 \begin{flushright}
 Roman Wetenkamp \\
 Mannheim, den \today
 \end{flushright}  
 \vfill
+\paragraph{Fehlerfinden}
+Mein Dank gilt folgenden Personen, die Fehler gefunden, korrigiert und so dieses Skript verbessert haben: 
+\begin{itemize}
+\item Daniel Riebel
+\end{itemize}
 \paragraph{Warnung}
 Das Studium an einer Dualen Hochschule unterscheidet sich von dem Studium an Universitäten oder regulären Fachhochschulen insbesondere dadurch, dass aufgrund der Dualität von Theorie und Praxis meist nur die Hälfte der Zeit zur Vermittlung des Stoffes zur Verfügung steht (wenn dann auch intensiver). Daher gehen Sie bitte nicht davon aus, dass Sie dieses Skript ausreichend auf Klausuren in regulären Vollzeitstudiengängen vorbereitet!
 \paragraph{Hinweis}
-Dieses Dokument ist kein Vorlesungsmaterial, hat nicht den Anspruch auf {Voll}\-{ständigkeit} und enthält mit Sicherheit Fehler. Desweiteren ist es noch lange nicht vollendet (es ist infrage zustellen, ob es das je sein wird), und doch möchte ich Sie ermutigen, beizutragen! Jegliche Fehler, Probleme oder Anmerkungen können Sie mir gerne über das dazugehörige GitHub-Repository unter der URL \url{https://github.com/RWetenkamp/kommnet} zukommen lassen. Danke!
+Dieses Dokument ist kein Vorlesungsmaterial, hat nicht den Anspruch auf {Voll}\-{ständigkeit} und enthält mit Sicherheit Fehler. Desweiteren ist es noch lange nicht vollendet (es ist infrage zustellen, ob es das je sein wird), und doch möchte ich Sie ermutigen, beizutragen! Jegliche Fehler, Probleme oder Anmerkungen können Sie mir gerne über das dazugehörige GitHub-Repository unter der URL \url{https://github.com/RWetenkamp/sysprog} zukommen lassen. Danke!
 \pagebreak
-
+\part{Einfache Ein-/Ausgabe-Prozesse}
 \section{Einführung}
 Systemnah zu programmieren bedeutet zuallererst, viele Ebenen der Abstraktion, die Betriebssysteme oder Virtualisierungen hinter sich zu lassen und zurückzukehren zu dem grundlegendsten Konzept der Computertechnik, dem Bit. \\
 \begin{definition}
@@ -107,8 +115,8 @@ Rechtsverschiebung & & \texttt{>>} & 1000 & \texttt{1 >> 1}: 0100, \texttt{1 << 
 \caption{Übersicht über unäre Bitoperationen}
 \end{table}
 
-Im folgenden Kapitel betrachten wir die verwendete Hardware und beginnen damit, die einzelnen Bestandteile und ihre Aufgaben zu erläutern. Wir werden jeweils anhand von Beispielprogrammen zeigen, wie die einzelnen Komponenten angesprochen und programmiert werden können. Die Programmiersprache hierfür ist C, in der Vorlesung wurde das {\glqq}Microchip Studio{\grqq} als IDE verwendet. Sie können es hier beziehen: \\
-\url{https://www.microchip.com/en-us/development-tools-tools-and-software/microchip-studio-for-avr-and-sam-devices}
+Im folgenden Kapitel betrachten wir die verwendete Hardware und beginnen damit, die einzelnen Bestandteile und ihre Aufgaben zu erläutern. Wir werden jeweils anhand von Beispielprogrammen zeigen, wie die einzelnen Komponenten angesprochen und programmiert werden können. Die Programmiersprache hierfür ist C, in der Vorlesung wurde das {\glqq}Microchip Studio{\grqq} als IDE verwendet. Sie können es hier beziehen: 
+\href{https://www.microchip.com/en-us/development-tools-tools-and-software/microchip-studio-for-avr-and-sam-devices}{Microchip Studio}
 
 \section{Hardware}
 Grundlegend ist Ihnen der Aufbau eines Computersystems sicherlich vertraut.
@@ -216,4 +224,39 @@ Eine allgemeine Schwierigkeit beim Einlesen der Daten liegt aufgrund des \textbf
 \includegraphics[scale=0.6]{prellen.png}
 \caption{Prellen eines Tasters}
 \end{figure}
+\section{Programmbeispiele}
+An dieser Stelle will ich die relevantesten Programme aus der Vorlesung abbilden, um sie reproduzierbar zu machen.
+\subsection{Blinken}
+Ein Standard-Beispiel, um zu testen, ob ein Arduino-Board funktionsfähig ist, ist das \textbf{Blink}-Beispiel. Wir wollen die Onboard-LED des Boards in einem vordefinierten Intervall zum Blinken bringen.
+\paragraph{Schaltung} Für dieses Beispiel müssen keine weiteren Komponenten an das Board angeschlossen werden. Wir verwenden lediglich die bereits fest verlötete Onboard-LED.
+\paragraph{Programm} \quad
+\begin{lstlisting}[language=C]
+/*
+ * Blinken
+ *	
+ */ 
+
+#define F_CPU 16000000UL	// Prozessortaktkonstante
+#include <avr/io.h>		// Systembibliothek
+#include <util/delay.h>		// Systembibliothek
+
+int main(void)
+{
+	DDRB |= (1 << DDB5);		// initialisiert B5 als Ausgangspin
+	PORTB |= (1 << PORTB5);		// legt Spannung an Port B5 an
+	
+	while (1) 
+	{
+		PORTB &= ~(1 << PORTB5);	// entzieht B5 die Spannung
+		_delay_ms(500);			// Wartet 500 Millisekunden
+		PORTB |= (1 << PORTB5);		// setzt B5 unter Spannung
+		_delay_ms(500);
+	}
+}
+\end{lstlisting}
+\subsection{Tastendruck auslesen}
+\textit{-- folgt --}
+\section*{Aufgaben}
+\part{Interrupts}
+\section{Interrupts}
 \end{document}
