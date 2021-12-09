@@ -201,7 +201,7 @@ Im nächsten Kapitel betrachten wir die Möglichkeiten des Einlesens genauer, in
 Mit der Definition des DDRs für die entsprechenden Bits ist die Hälfte getan. Wollen wir nun die Systemspannung von 5 V an einen spezifizierten Port anlegen, gehen wir analog vor:
 \begin{lstlisting}[language=C]
 PORTB |= (1 << PORTB5);			// einschalten
-PORTB |= ~(1 << PORTB5);		// ausschalten
+PORTB &= ~(1 << PORTB5);		// ausschalten
 \end{lstlisting}
 \subsection{Eingangssignale}
 In vielen Schaltungen verwenden wir Taster und Schalter, um auf Benutzereingaben zu reagieren. Diese Bauelemente beeinflussen die Ströme, in dem eine Spannung erst bei Tastendruck anliegt oder dann nicht mehr. Der Microcontroller liest diese Spannungen nun aus und interpretiert sie entsprechend mit 0/1 (an/aus). Für dieses Verfahren gibt es zwei Varianten:
