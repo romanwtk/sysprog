@@ -187,7 +187,7 @@ Sie erkennen die Definition der Konstante F{\_}CPU in der ersten Zeile. Hier leg
 Unser Ziel ist es, verschiedene elektronische Bauteile an den Ports des Microcontrollers anzuschließen und mit diesem interagieren zu lassen. Dafür veranschaulichen wir uns zunächst die Pinbelegung des Boardes.
 \begin{figure}[h!]
 \centering
-\includegraphics[scale=0.8]{pins.png}
+\includegraphics[scale=0.8]{pins.png}\label{pins}
 \caption{Pinbelegungen des Arduino Unos}
 \end{figure}
 Von Relevanz für das nun folgende programmatische Ansprechen der Pins sind die hier gelb hinterlegten {\glqq}Port Pin{\grqq}-Belegungen, also beispielsweise der Port \textbf{PB5} an Pin 19 bzw. Onboard-IDE 13. Wir erkennen, dass es drei mal acht dieser Ports gibt, die Register PB (für Port B), PC und PD. Diese Ports nutzen wir -- wie angesprochen -- um zusätzliche Bauteile anzusprechen. \\\\
@@ -296,4 +296,98 @@ int main(void)
 \end{enumerate}
 \part{Interrupts}
 \section{Interrupts}
+Die zweite Variante, um mit Eingaben umzugehen, sind Interrupts. \\
+\begin{definition}
+Unter einem Interrupt verstehen wir eine kurzfristige und unmittelbare Unterbrechung der Programmausführung, um einen kurzen, zeitlich kritischen Vorgang abzuarbeiten.
+\end{definition}
+\paragraph{Motivation}
+Dem Kontext von Eingaben nähern wir uns durch folgende Betrachtungsweise:
+Während wir beim Polling fortwährend überprüfen, ob eine Bedingung eingetreten ist -- wie z. B. ein Tastendruck -- und dann auf dieses Ereignis reagieren, operieren wir bei Interrupts anders. Wir melden an, dass wir bei einem bestimmten Ereignis unterbrochen werden wollen. Tritt dieses Ereignis nun ein, wird unsere Programmausführung unterbrochen und die Behandlung des Ereignisses wird ausgeführt. Auf diese Weise besteht keine Notwendigkeit mehr, ressourcenintensiv die Bedingung fortwährend zu überprüfen, sondern viel mehr ergeben sich Möglichkeiten der Nebenläufigkeit. 
+\paragraph{Umsetzung}
+Wenn wir erneut die Abbildung \ref{pins} betrachten, so finden wir dort den Ports PD2 und PD3 die Bezeichnungen \textbf{INT0} und \textbf{INT1}. Diese Pins sind die einzigen direkt geschalteten Interrupt-Ports. Eine Änderung der Spannung an diesen Pins triggert die Interrupt-Routinen, die wir im Folgenden implementieren werden. Neben diesen beiden Interrupt-Pins gibt es eine Zahl weiterer, die über ein Multiplexing-Verfahren adressiert werden können. Dies war jedoch nicht Teil der Vorlesung und wird daher an dieser Stelle ausgespart. 
+\paragraph{Interrupttabelle}
+Für jeden möglichen Interrupt muss zentral gespeichert sein, was nach Eintritt des selbigen abläuft. Dazu steht am Anfang des Flash-Speichers die \textbf{Interrupttabelle}. So befindet sich beispielsweise für den Interrupt INT0 ein Eintrag in der Tabelle, der einen Sprungbefehl der Form \texttt{JMP 1000} oder \texttt{RETI} beinhaltet. Letzteres steht für {\glqq}Return from Interrupt{\grqq} und referenziert die Rücksprungadresse zurück in das Hauptprogramm.
+\paragraph{ISR (Interrupt Service Routine)} Wir implementieren in unserem Programm sogenannte ISRs, in denen der Code steht, den wir im Falle eines Interrupts an einem spezifizierten Pin ausführen. 
+\begin{lstlisting}[language=C]
+ISR (INT0_vect) {
+	// Programmzeilen
+}
+\end{lstlisting}
+Der Code in den ISRs sollte so klein wie möglich sein, da die Abarbeitung per se kritisch ist und keine Interrupts ineinander ausgelöst werden sollten. Daraus folgt auch, dass keine teuren Operationen in ISRs zu erfolgen haben.
+\paragraph{Konfiguration}
+Um Interrupts im Programm nutzen zu können und auf Eingaben zu reagieren, müssen wir -- auf gewohnte Art und Weise -- wieder bestimmte Registereinträge ändern.
+\begin{itemize}
+\item \textbf{EICRA} (External Interrupt Control Register A) -- Die Bits in diesem Register spezifizieren genauer, welche Änderungen der Spannung am Interrupt-Pin die ISR auslösen. Die genauen Einstellungen hierfür sind den Datenblättern der Microcontroller zu entnehmen. Möglich ist beispielsweise, dass nur bei steigenden bzw. fallenden Flanken reagiert wird oder generell bei jedem Pegelwechsel. 
+\begin{table}[h!]
+\centering
+\begin{tabular}{|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|}
+\hline
+7 & 6 & 5 & 4 & 3 & 2 & 1 & 0 \\
+\hline
+-- & -- & -- & -- & ISC11 & ISC10 & ISC01 & ISC00 \\
+\hline
+\end{tabular}
+\caption{EICRA}
+\end{table}
+Dabei spezifizieren ISC11 und ISC10 zusammen INT1 und ISC01 und ISC00 INT0.
+\item \textbf{EIMSK} (External Interrupt Mask Register) -- In diesem Register werden die Interrupts {\glqq}scharf geschaltet{\grqq}. Nur wenn das Bit für INT0 hier auf 1 gesetzt wurde, reagiert das Programm tatsächlich auf einen Interrupt an Pin 1.
+\begin{table}[h!]
+\centering
+\begin{tabular}{|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|}
+\hline
+7 & 6 & 5 & 4 & 3 & 2 & 1 & 0 \\
+\hline
+-- & -- & -- & -- & -- & -- & INT1 & INT0 \\
+\hline
+\end{tabular}
+\caption{EIMSK}
+\end{table}
+\end{itemize}
+\section{Programmbeispiel}
+\subsection{Lichtschalter}
+Wir wollen Interrupts nutzen, um die Onboard-LED des Entwicklungsboards über zwei Schalter ein- und auszuschalten.
+\paragraph{Schaltung}
+Wir benötigen erneut zwei Schalter, die wir auf einem Entwicklungsboard platzieren. Jeweils einen Kontakt der Schalter verbinden wir mit GND und einen der anderen mit INT0/INT1, also PD2 und PD3.
+\paragraph{Programm}\quad
+\begin{lstlisting}[language=C]
+#include <avr/io.h>
+#include <avr/interrupt.h>	// Systembibliothek
+
+ISR (INT0_vect) {	// ISR fuer INT0
+	PORTB = 0x00;	// Schaltet die Ports an B aus
+}			
+
+ISR (INT1_vect) {	// ISR fuer INT1
+	PORTB = 0xff;	// Schaltet die Ports an B ein
+}
+
+
+int main(void)
+{
+	DDRB = 0xFF;		// Alle B-Ports werden Ausgaenge
+	PORTB = 0xFF;		// Schaltet alle B-Ports ein 
+	
+	DDRD &= ~(1 << DDD2); 	// D2 wird Eingang
+	PORTD |= (1 << PORTD2);	// An D2 wird Spannung angelegt
+	DDRD &= ~(1 << DDD3);	// D3 wird Eingang
+	PORTD |= (1 << PORTD3);	// An D3 wird Spannung angelegt
+	
+	EICRA |= (1 << ISC00);	// INT0 triggert bei Pegelwechsel
+	EICRA |= (1 << ISC11);	// INT1 triggert bei Pegelwechsel
+	EIMSK |= (1 << INT0);	// INT0 wird scharf
+	EIMSK |= (1 << INT1);	// INT1 wird scharf
+	
+	sei();			// set enable interrupt
+	
+    while (1) 
+    {
+    }
+}
+\end{lstlisting}
+\section*{Aufgaben}
+\begin{enumerate}
+\item Erläutern Sie, inwiefern der Einsatz von Interrupts gegenüber Polling vorteilsbehaftet ist.
+\item Nennen Sie Anforderungen an ISRs.
+\item Bauen Sie eine Schaltung mit zwei Tastern an INT0 und INT1 und einem Summer an einem Port aus B nach Wahl auf. Entwickeln Sie ein Programm, dass die Frequenz des Summers bei Tastendruck verdoppelt (starten Sie mit einer niedrigen Frequenz) und dem Summer sofort die Spannung entzieht, sollte der andere Taster gedrückt werden (ein Not-Aus-Schalter). Verwenden Sie dafür Interrupts.
+\end{enumerate}
 \end{document}
