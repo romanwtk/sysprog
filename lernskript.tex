@@ -255,8 +255,45 @@ int main(void)
 }
 \end{lstlisting}
 \subsection{Tastendruck auslesen}
-\textit{-- folgt --}
+Nun wollen wir zwei Taster mittels Polling auslesen und bei die Onboard-LED bei Tastendruck ein- bzw. ausschalten.
+\paragraph{Schaltung} Zusätzlich zum Entwicklungsboard benötigen wir nun zwei Taster, den wir auf einem Steckbrett befestigen und mit Port D2 und D3 des Boards verbinden. Der zweite Anschluss der Taster wird mit GND (Masse) verbunden. Bezogen auf obige Grafik handelt es sich dabei um die Pins 16, 17 und 20 (GND).
+\paragraph{Programm} \quad
+\begin{lstlisting}[language=C]
+#include <avr/io.h>
+
+int main(void)
+{
+	DDRD &= ~(1 << DDD2);	// D2 ist Eingabe
+	DDRD &= ~(1 << DDD3);	// D3 ist Eingabe
+	
+	// Pull up
+	PORTD |= (1 << DDD2) | (1 << DDD3);
+	
+	DDRB |= (1 << PORTB5);		// Onboard-LED ist Ausgabe
+	PORTB &= ~(1 << PORTB5);	// Onboard-LED ist initial aus
+	
+    while (1) 
+    {
+    		// Auslesen der Taster
+		if(! (PIND & (1 << DDD2))){
+			// Einschalten der LED			
+			PORTB |= (1 << PORTB5);
+		}
+		
+		if(! (PIND & (1 << DDD3))){
+			// Ausschalten der LED			
+			PORTB &= ~(1 << PORTB5);
+		}
+    }
+}
+
+\end{lstlisting}
 \section*{Aufgaben}
+\begin{enumerate}
+\item Nennen Sie die drei unterschiedlichen Arten von Speicher. Erläutern Sie die Unterschiede.
+\item Erläutern Sie das Vorgehen, um eine weitere LED vom Board aus unter Spannung zu setzen.
+\item Schließen Sie eine LED an Port B3 und einen Taster an Port D2 an. Entwickeln Sie ein Programm, das beim Druck des Tasters zwischen der Onboard-LED und der externen LED umschaltet.
+\end{enumerate}
 \part{Interrupts}
 \section{Interrupts}
 \end{document}
