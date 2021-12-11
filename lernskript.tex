@@ -46,7 +46,7 @@
 \pagebreak
 \section*{Vorwort}
 Liebe Mitstudierende, \\\\
-Systemnah Programmieren -- Klingt komplizierter als es ist. Vielleicht habt ihr euch schon einmal einen Elektronik-Adventskalender oder -baukasten schenken lassen, um damit herumzuspielen, einen Feuchtigkeitssensor für Blumenerde zu entwickeln oder die intelligente Wäscheklammer? In diesem Modul widmen wir uns genau mit diesem Gebiet, dem hardwarenahen Herumtüfteln an Mikrocomputern. \\\\
+Systemnah Programmieren -- Klingt komplizierter als es ist. Vielleicht habt ihr euch schon einmal einen Elektronik-Adventskalender oder -baukasten schenken lassen, um damit herumzuspielen, einen Feuchtigkeitssensor für Blumenerde zu entwickeln oder die intelligente Wäscheklammer? In diesem Modul widmen wir uns genau diesem Gebiet, dem hardwarenahen Herumtüfteln an Mikrocomputern. \\\\
 In diesem Skript notieren wir alles Relevante aus der Vorlesung, ergänzen es um ein paar Aufgaben und Anmerkungen und bereiten uns so auf die Klausur vor. Dieses Skript basiert auf der Vorlesung von Joachim Wagner an der DHBW Mannheim im Studiengang Informatik -- Cyber Security, die Passgenauigkeit für andere Dozierende oder Jahrgänge kann ich nicht beurteilen. \\\\
 \textit{Viel Erfolg!}  \\
 \begin{flushright}
@@ -390,4 +390,29 @@ int main(void)
 \item Nennen Sie Anforderungen an ISRs.
 \item Bauen Sie eine Schaltung mit zwei Tastern an INT0 und INT1 und einem Summer an einem Port aus B nach Wahl auf. Entwickeln Sie ein Programm, dass die Frequenz des Summers bei Tastendruck verdoppelt (starten Sie mit einer niedrigen Frequenz) und dem Summer sofort die Spannung entzieht, sollte der andere Taster gedrückt werden (ein Not-Aus-Schalter). Verwenden Sie dafür Interrupts.
 \end{enumerate}
+\pagebreak
+\part{Timer / Counter}
+\section{Timer und Counter}
+Das nächste Konstrukt, dem wir uns wimden wollen, sind Timer. Im Blockschaltbild haben wir bereits die zwei 8-Bit- und den einen 16-Bit-Timer entdeckt und nun wollen wir mit diesen arbeiten und die Theorie dahinter verstehen.
+\paragraph{Allgemeine Funktionsweise}
+Ein Timer ermöglicht es uns, Aussagen zur Zeit, insbesondere der Laufzeit, zu treffen und in Abhängigkeit dazu Aktionen zu realisieren. Allgemein orientiert sich das Zählen immer am Prozessortakt. Über die verschiedenen Modi, die wir später noch genauer kennenlernen werden, lässt sich jedoch z. B. festlegen, dass nur jeder achte Prozessortakt gezählt werden soll. Läuft der Zähler über, beginnt er anschließend wieder bei 0.
+\paragraph{Normal- und CTC-Mode}
+In welchem Modus ein Timer operiert, wird in Registern festgehalten. Für jeden Timer gibt es drei \textbf{Timer/Counter Control Register (TCCRnA, TCCRnB, TCCRnC)}.
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.6]{timer_counter.png}
+\caption{Registerübersicht}
+\end{figure}
+Betrachten wir nun die verschiedenen Modi (mittlere Tabelle).
+\begin{itemize}
+\item \textbf{Normal-Mode} -- In diesem Modus zählt der Timer die Prozessortakte bis 0xFF, also 255. Anschließend wird er zurückgesetzt und beginnt wieder bei 0. Dieser Modus wird selten eingesetzt.
+\item \textbf{CTC-Mode} -- Ist man hingegen daran interessiert, weniger weit als 255 zu zählen, lässt sich in diesem Modus eine Zahl definieren (OCR0A), bis der gezählt wird und ab der der Counter wieder zurückgesetzt wird. Dieser Modus ist verbreiteter als der Normalmode.
+\end{itemize}
+Zusätzlich gibt es für beide Modi die Möglichkeit, einen Prescaler einzusetzen. Jener, ebenfalls in Registern festgelegte, Wert teilt die Frequenz des Prozessortaktes und bewirkt folglich, dass der Timer gewisse Takte ignoriert und entsprechend länger zählt. Dafür setzen wir der unteren Tabelle entsprechend die CSn-Bits. \\\\
+Nun bleibt noch die Frage, wie wir auf die Ergebnisse/Werte des Timers reagieren. Für Timer im Normal- oder CTC-Mode verwenden wir hierfür Interrupts und deklarieren entsprechende ISR-Routinen. Dafür gehen wir vor wie im vorherigen Kapitel und setzen nun statt des EIMSK-Register das \textbf{TIMSKn}-Register. 
+\begin{lstlisting}[language=C]
+ISR (TIMER0_COMPA_vect) {
+	// code
+}
+\end{lstlisting}
 \end{document}
