@@ -406,7 +406,7 @@ In welchem Modus ein Timer operiert, wird in Registern festgehalten. Für jeden 
 Betrachten wir nun die verschiedenen Modi (mittlere Tabelle).
 \begin{itemize}
 \item \textbf{Normal-Mode} -- In diesem Modus zählt der Timer die Prozessortakte bis 0xFF, also 255. Anschließend wird er zurückgesetzt und beginnt wieder bei 0. Dieser Modus wird selten eingesetzt.
-\item \textbf{CTC-Mode} -- Ist man hingegen daran interessiert, weniger weit als 255 zu zählen, lässt sich in diesem Modus eine Zahl definieren (OCR0A), bis der gezählt wird und ab der der Counter wieder zurückgesetzt wird. Dieser Modus ist verbreiteter als der Normalmode.
+\item \textbf{CTC-Mode (Clear Timer on Compare Match)} -- Ist man hingegen daran interessiert, weniger weit als 255 zu zählen, lässt sich in diesem Modus eine Zahl definieren (OCR0A), bis der gezählt wird und ab der der Counter wieder zurückgesetzt wird. Dieser Modus ist verbreiteter als der Normalmode.
 \end{itemize}
 Zusätzlich gibt es für beide Modi die Möglichkeit, einen Prescaler einzusetzen. Jener, ebenfalls in Registern festgelegte, Wert teilt die Frequenz des Prozessortaktes und bewirkt folglich, dass der Timer gewisse Takte ignoriert und entsprechend länger zählt. Dafür setzen wir der unteren Tabelle entsprechend die CSn-Bits. \\\\
 Nun bleibt noch die Frage, wie wir auf die Ergebnisse/Werte des Timers reagieren. Für Timer im Normal- oder CTC-Mode verwenden wir hierfür Interrupts und deklarieren entsprechende ISR-Routinen. Dafür gehen wir vor wie im vorherigen Kapitel und setzen nun statt des EIMSK-Register das \textbf{TIMSKn}-Register. 
@@ -415,4 +415,67 @@ ISR (TIMER0_COMPA_vect) {
 	// code
 }
 \end{lstlisting}
+\section{PWM (Pulsweiten-Modulation)}
+Weitere, signifikant andere Modi für Timer/Counter sind die der Pulsweiten-Modulation. Häufiges Einsatzfeld hierfür ist das Dimmen von LEDs. \footnote{Basierend auf \href{www.allaboutcircuits.com}{https://www.allaboutcircuits.com/technical-articles/introduction-to-microcontroller-timers-pwm-timers/}}
+\paragraph{Funktionsweise von PWM im Allgemeinen} Stellen wir uns eine LED vor. Schließen wir sie ohne Timer/Counter an die Spannungsversorgung unseres Arduinos an, leuchtet sie konstant in der vorgesehenen und über den Vorwiderstand gesteuerten Helligkeit. Wir können nun einen Schalter einsetzen, der die LED alle halbe Sekunde ein- und wieder ausschaltet. Dann blinkt sie. Wenn wir nun nicht mehr von Sekunden reden, sondern sehr viel schneller ein- und wieder ausschalten, wirkt die LED dunkler und unser menschliches Auge erkennt das Schalten nicht mehr. Das nutzen wir aus. Wenn wir eine LED also nun dimmen wollen, beeinflussen wir folglich, wie groß die Intervalle zwischen Ein- und Ausschalten sind.
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.7]{pwm.png}
+\caption{Darstellung von Fast PWM}
+\end{figure}
+Diese Technik ist besagte Pulsweitenmodulation. In der obigen Grafik wird die LED mit einer Pulsweite von 3 in einer Periode von 10 mit Spannung versorgt. Das entspricht einem \textbf{Duty-Cycle} von 30 \%. Beträgt die Breite in diesem Beispiel 5, ergäbe sich ein Duty-Cycle von 50 \%. Die Angabe erfolgt üblicherweise in Prozent.
+\paragraph{Timer im PWM-Modus} Nun sind wir aber selbstredend noch daran interessiert, zu erfahren, wie denn nun Timer auf dieser Technik aufbauen. Für PWM gibt es verschiedene Modi (siehe Tabelle), in denen auch wieder festgelegt ist, ob bis 255 oder dem OCR0-Wert (Top-Wert) gezählt wird. Dieser Wert stellt die \textbf{Periode} dar. Im einfachsten Fall, dem Modus Fast PWM, funktioniert die Technik so: Zu dem Zeitpunkt, wo der Timer den Top-Wert erreicht, werden die Ausgabe-Pins der PWM-Timer unter Spannung gesetzt. Die Spannungsversorgung endet, wenn der Wert für die Pulsweite, der durch die Registerwerte für OCRA (im Fall Top=255) und OCRB (im Fall Top=OCRA) definiert ist, erreicht wird. Dann zählt der Timer bis zum Ende der Periode weiter. \\\\
+Wie angedeutet, existieren zwei PWM-Modi mit leichten Unterschieden:
+\begin{itemize}
+\item \textbf{Fast PWM} -- Der Timer zählt von 0 bis z. B. 255, setzt nun die Pins unter Spannung, bis Compare Match eingetreten ist (OCRA-Wert). Nun wird weitergezählt, bis erneut 255 erreicht ist.
+\item \textbf{Phase-corrected PWM} -- Der Timer zählt von 0 bis z. B. 255 und entzieht den Pins auf dem {\glqq}Hinweg{\grqq} die Spannung, wenn der entsprechende Wert erreicht wurde. Ist TOP (also 255) erreicht, wird nicht wieder bei 0 begonnen, sondern es wird jetzt rückwärts gezählt und beim Vergleichswert werden die Pins wieder mit Spannung versorgt. So ergibt sich eine symmetrischere Spannungskurve. 
+\end{itemize}
+\paragraph{Signalausgabe} In bekanntem Schaltbild \ref{pins} können wir eine Reihe an Pins entnehmen, die mit dem Zusatz \textbf{PWM} gekennzeichnet sind. Diese Pins sind in der Lage, ein PWM-Signal auszugeben. Für den ersten Timer, den wir nutzen, ist dies beispielsweise an Pin D6 der Fall.
+\section{Programmbeispiel}
+\subsection{LED dimmen über PWM-Timer}
+\paragraph{Schaltung}
+Wir schließen die Anode einer LED mit Vorwiderstand an den Port D6 und die Kathode an GND an. Der passende Vorwiderstand ist abhängig von der Spezifikation der LED.
+\paragraph{Programm} \quad
+\begin{lstlisting}[language=C]
+#define F_CPU 16000000UL
+#include <avr/io.h>
+#include <util/delay.h>
+
+int main(void)
+{
+	DDRD |= (1 << DDD6);
+	PORTD |= (1 << PORTD6);
+	
+	OCR0A = 0;
+	
+	// Counter is now non-inverting
+	TCCR0A |= (1 << COM0A1);
+	
+	// Set counter in PWM mode (fast PWM)
+	TCCR0A |= (1 << WGM02) | (1 << WGM01) | (1 << WGM00);
+	
+	// Set prescaler = 8
+	TCCR0B |= (1 << CS01);
+    
+    while (1) 
+    {
+		while (1) {
+			// Increment OCR0A and wait 25 ms
+			OCR0A += 1;
+			_delay_ms(25);
+		}
+	}
+}
+\end{lstlisting}
+\section*{Aufgaben}
+\begin{enumerate}
+\item Erläutern Sie die Möglichkeiten, auf Timer-Ereignisse programmatisch zu reagieren. Gehen Sie dabei auf die unterschiedlichen Modi ein.
+\item Berechnen Sie die OCRA-Werte für folgende Duty-Cycles und TOP-Werte und erläutern Sie die Bedeutung der einzelnen Werte.
+\begin{itemize}
+\item 45 \% Duty-Cycle bei einem TOP-Wert von 0xFF
+\item 70 \% Duty-Cycle bei einem TOP-Wert von 128
+\item 10 \% Duty-Cycle bei einem TOP-Wert von 64
+\end{itemize}
+\item Erweitern Sie das dargestellte Programm so, dass nun zwei LEDs invers zueinander hoch- bzw. heruntergedimmt werden. Die eine LED soll folglich genau dann am stärksten leuchten, wenn die andere nicht leuchtet. Begründen Sie Ihre Ansätze.
+\end{enumerate}
 \end{document}
