@@ -4,7 +4,8 @@ Auf organisatorische atemberaubende Weise betrat kurz vor Ende des Semesters ein
 Um auch hier gut genug zu lernen und nicht zu denken "einmal gehört, sofort behalten" würde für mich funktionieren, entstand das hier. 
 
 ### Beitragen
-Wie immer freue ich mich über Kommentare, Issues oder Pull requests! 😊
+Wie immer freue ich mich über Kommentare, Issues oder Pull requests! 😊 
+
 s200376@student.dhbw-mannheim.de
 
-**Viel Erfolg bei der Klausurvorbereitung!**
+**Viel Erfolg bei der Klausurvorbereitung!** Wir schaffen das. 🍀🥳
