@@ -35,6 +35,14 @@
 
 \lstset{extendedchars=\true ,inputencoding=utf8}
 
+\newlength{\stackWidth}
+\setlength{\stackWidth}{5cm}
+
+\newlength{\smallestHeight}
+\setlength{\smallestHeight}{11pt}
+
+\tikzset{block2/.style={shape=rectangle, draw, node distance=-1pt, minimum width = \stackWidth, line width=1pt, inner sep=0pt}}
+
 \begin{document}
 \vspace{3cm}
 \maketitle
@@ -64,7 +72,7 @@ Mein Dank gilt folgenden Personen, die Fehler gefunden, korrigiert und so dieses
 \paragraph{Warnung}
 Das Studium an einer Dualen Hochschule unterscheidet sich von dem Studium an Universitäten oder regulären Fachhochschulen insbesondere dadurch, dass aufgrund der Dualität von Theorie und Praxis meist nur die Hälfte der Zeit zur Vermittlung des Stoffes zur Verfügung steht (wenn dann auch intensiver). Daher gehen Sie bitte nicht davon aus, dass Sie dieses Skript ausreichend auf Klausuren in regulären Vollzeitstudiengängen vorbereitet!
 \paragraph{Hinweis}
-Dieses Dokument ist kein Vorlesungsmaterial, hat nicht den Anspruch auf {Voll}\-{ständigkeit} und enthält mit Sicherheit Fehler. Desweiteren ist es noch lange nicht vollendet (es ist infrage zustellen, ob es das je sein wird), und doch möchte ich Sie ermutigen, beizutragen! Jegliche Fehler, Probleme oder Anmerkungen können Sie mir gerne über das dazugehörige GitHub-Repository unter der URL \url{https://github.com/RWetenkamp/sysprog} zukommen lassen. Danke!
+Dieses Dokument ist kein Vorlesungsmaterial, hat nicht den Anspruch auf {Voll}\-{ständigkeit} und enthält mit Sicherheit Fehler. Des Weiteren ist es noch lange nicht vollendet (es ist infrage zustellen, ob es das je sein wird), und doch möchte ich Sie ermutigen, beizutragen! Jegliche Fehler, Probleme oder Anmerkungen können Sie mir gerne über das dazugehörige GitHub-Repository unter der URL \url{https://github.com/RWetenkamp/sysprog} zukommen lassen. Danke!
 \pagebreak
 \part{Einfache Ein-/Ausgabe-Prozesse}
 \section{Einführung}
@@ -74,7 +82,7 @@ Ein Bit ist die kleinste Speichereinheit eines Computersystems. Der Wert eines B
 \[8 \text{ Bit } \widehat{=} 1 \text{ Byte }\]
 \end{definition}
 
-Sie werden in Ihren Programmen verschiedene Bitoperationen implementieren müssen, da die zugrundliegende Hardware zu großen Teilen aus Registern besteht, die sie auf diese Weise ansprechen können.
+Sie werden in Ihren Programmen verschiedene Bitoperationen implementieren müssen, da die zugrundeliegende Hardware zu großen Teilen aus Registern besteht, die sie auf diese Weise ansprechen können.
 \begin{table}[h]
 \centering
 \begin{tabular}{|l|c|c|c|c|c|}
@@ -117,7 +125,7 @@ Rechtsverschiebung & & \texttt{>>} & 1000 & \texttt{1 >> 1}: 0100, \texttt{1 >> 
 \caption{Übersicht über unäre Bitoperationen}
 \end{table}
 
-Im folgenden Kapitel betrachten wir die verwendete Hardware und beginnen damit, die einzelnen Bestandteile und ihre Aufgaben zu erläutern. Wir werden jeweils anhand von Beispielprogrammen zeigen, wie die einzelnen Komponenten angesprochen und programmiert werden können. Die Programmiersprache hierfür ist C, in der Vorlesung wurde das {\glqq}Microchip Studio{\grqq} als IDE verwendet. Sie können es hier beziehen: 
+Im folgenden Kapitel betrachten wir die verwendete Hardware und beginnen damit, die einzelnen Bestandteile und ihre Aufgaben zu erläutern. Wir werden jeweils anhand von Beispielprogrammen zeigen, wie die einzelnen Komponenten angesprochen und programmiert werden können. Die Programmiersprache hierfür ist C, in der Vorlesung wurde das {\glqq}Mikrochip Studio{\grqq} als IDE verwendet. Sie können es hier beziehen: 
 \href{https://www.microchip.com/en-us/development-tools-tools-and-software/microchip-studio-for-avr-and-sam-devices}{Microchip Studio}
 
 \section{Hardware}
@@ -127,25 +135,25 @@ Grundlegend ist Ihnen der Aufbau eines Computersystems sicherlich vertraut.
 \item Während der Ausführung speichert die CPU Programmdaten im Arbeitsspeicher, dem \textbf{RAM} (Random Access Memory). Dieser Speicher wird nur zur Laufzeit genutzt und ist daher nicht persistent.
 \item Ebenso gibt es einen Massenspeicher, eine Festplatte, auf der Daten persistent gespeichert werden und bei Bedarf gelesen/geschrieben werden.
 \end{itemize}
-Diese Grundstruktur gleicht im Wesentlichen dem \textsc{Von-Neumann-Prinzip} und ist sowohl auf klassische PCs anwendbar als auch auf Microcontroller, denen wir uns im Rahmen dieser Vorlesung widmen wollen.
+Diese Grundstruktur gleicht im Wesentlichen dem \textsc{Von-Neumann-Prinzip} und ist sowohl auf klassische PCs anwendbar als auch auf Mikrocontroller, denen wir uns im Rahmen dieser Vorlesung widmen wollen.
 \\
 \begin{note}
-Ein \textbf{Microcontroller} ist ein Minicomputer auf einem Chip. Er enthält einen Microprozessor und Speicher.
+Ein \textbf{Mikrocontroller} ist ein Minicomputer auf einem Chip. Er enthält einen Mikroprozessor und Speicher.
 \end{note}
-Ein solcher Microcontroller findet sich häufig auf Entwicklungsboards, wie z. B. der Arduino-Produktfamilie, die bereits aufgelötete Ports für weitere Komponenten enthalten. Derartige Boards gibt es zuhauf im Markt. Häufig sind die Unterschiede gering, da Arduino-Boards unter einer Open-Source-Lizenz stehen und somit von anderen ohne Weiteres kopiert werden dürfen. \\\\
-Im Rahmen dieser Vorlesung arbeiten wir mit Arduino-Microcontrollern oder zu Arduino kompatiblen Äquivalenten. Die von uns verwendeten Boards enthalten allesamt folgenden Microprozessor:
+Ein solcher Mikrocontroller findet sich häufig auf Entwicklungsboards, wie z. B. der Arduino-Produktfamilie, die bereits aufgelötete Ports für weitere Komponenten enthalten. Derartige Boards gibt es zuhauf im Markt. Häufig sind die Unterschiede gering, da Arduino-Boards unter einer Open-Source-Lizenz stehen und somit von anderen ohne Weiteres kopiert werden dürfen. \\\\
+Im Rahmen dieser Vorlesung arbeiten wir mit Arduino-Mikrocontrollern oder zu Arduino kompatiblen Äquivalenten. Die von uns verwendeten Boards enthalten allesamt folgenden Mikroprozessor:
 \begin{center}
 \textbf{ATMEL ATmega 328P}
 \end{center}
-Die Kenntnis des Microcontrollers ist unabdingbar für den weiteren Verlauf der Vorlesung. \\
-Die Microcontroller Arduino Uno und Arduino Nano enthalten genannten Prozessor. Wir werden als Referenz jeweils den Arduino Uno verwenden.
+Die Kenntnis des Mikrocontrollers ist unabdingbar für den weiteren Verlauf der Vorlesung. \\
+Die Mikrocontroller Arduino Uno und Arduino Nano enthalten genannten Prozessor. Wir werden als Referenz jeweils den Arduino Uno verwenden.
 \begin{figure}[h!]
 \centering
 \includegraphics[scale=0.4]{uno.png}
 \caption{Arduino Uno mit ATMEL ATmega328P}
 \end{figure}
 \paragraph{Aufbau}
-Dieser Microcontroller enthält einige relevante Komponenten, die über einen Bus mit der CPU verbunden sind. Wir entnehmen diese dem folgenden Blockschaltbild.
+Dieser Mikrocontroller enthält einige relevante Komponenten, die über einen Bus mit der CPU verbunden sind. Wir entnehmen diese dem folgenden Blockschaltbild.
 \begin{figure}[h!]
 \centering
 \includegraphics[scale=0.5]{b2-1.png}
@@ -154,17 +162,17 @@ Dieser Microcontroller enthält einige relevante Komponenten, die über einen Bu
 \item \textbf{Flash} -- Der Flash-Speicher ist neben SRAM und EEPROM einer der drei Speichertypen. Der Flash-Speicher ist unveränderlich und kann lediglich von außen gebrannt werden. Hier wird das aktuelle Skript / Programm gespeichert.
 \item \textbf{SRAM} -- Hierbei handelt es sich um einen winzig kleinen Arbeitsspeicher. Dieser Speicher ist nicht persistent und wird von der CPU während der Laufzeit verwaltet und verwendet.
 \item \textbf{EEPROM} -- Dieser Speicher ist persistent und fungiert als {\glqq}Festplatte{\grqq}.
-\item \textbf{Watchdog} -- Sollte der Chip nach einer gewissen Zeit kein Lebenssignal mehr senden, setzt der Watchdog den Microcontroller automatisch zurück.
+\item \textbf{Watchdog} -- Sollte der Chip nach einer gewissen Zeit kein Lebenssignal mehr senden, setzt der Watchdog den Mikrocontroller automatisch zurück.
 \item \textbf{A/D Converter} -- Die Prozessoren der ATmega-Reihe können analoge Signale in digitale umwandeln. Dafür ist dieser Baustein zuständig.
 \item \textbf{8/16bit T/C} -- Diese Bauteile sind Timer/Counter, die zur Prozesssteuerung genutzt werden können. Wir widmen uns diesen Bauteilen später.
 \item \textbf{USART} -- Eine serielle Schnittstelle für diversen Datenverkehr ist der USART-Baustein.
-\item \textbf{TWI} -- Die TWI-Schnittstelle kann für die Verknüpfung mehrerer Microcontroller untereinander genutzt werden.
+\item \textbf{TWI} -- Die TWI-Schnittstelle kann für die Verknüpfung mehrerer Mikrocontroller untereinander genutzt werden.
 \end{itemize}
 Im Allgemeinen wird die Kommunikation mit jeder Hardware/CPU über I/O-Ports abgewickelt. 
 \begin{note}
-Gelegentlich kann es zu Verwirrung kommen, da sowohl internen I/O-Ports des Microcontrollers als auch die Anschlusspins für elektronische Bauteile als \textbf{Ports} bezeichnet werden. Im Kontext dieses Kurses bezeichnen wir letztere als {\glqq}Beinchen{\grqq}.
+Gelegentlich kann es zu Verwirrung kommen, da sowohl internen I/O-Ports des Mikrocontrollers als auch die Anschlusspins für elektronische Bauteile als \textbf{Ports} bezeichnet werden. Im Kontext dieses Kurses bezeichnen wir letztere als {\glqq}Beinchen{\grqq}.
 \end{note}
-\paragraph{System} Der hier gezeigte Controller folgt der \textbf{RISC}-Architektur. RISC steht für {\glqq}Reduced Instruction Set Controller{\grqq}. Es hat sich gezeigt, dass mit einem im Vergleich zu Assembler reduzierten Befehlssatz ähnlich effizient, jedoch viel leichter dekodierbar und in der Regel schneller, gearbeitet werden kann. Der Microcontroller enthält von sich aus kein Betriebssystem. Wollen wir ein Programm ausführen, so müssen wir dieses speziell für diesen Microprozessor in einer hardwarenahen Programmiersprache wie Java oder C implementieren.
+\paragraph{System} Der hier gezeigte Controller folgt der \textbf{RISC}-Architektur. RISC steht für {\glqq}Reduced Instruction Set Controller{\grqq}. Es hat sich gezeigt, dass mit einem im Vergleich zu Assembler reduzierten Befehlssatz ähnlich effizient, jedoch viel leichter dekodierbar und in der Regel schneller, gearbeitet werden kann. Der Mikrocontroller enthält von sich aus kein Betriebssystem. Wollen wir ein Programm ausführen, so müssen wir dieses speziell für diesen Mikroprozessor in einer hardwarenahen Programmiersprache wie Java oder C implementieren.
 \section{Grundlegendes zur Programmierung}
 Wir werden in dieser Vorlesung -- und damit auch in diesem Skript -- die Programmiersprache C verwenden. Um die benötigten Bibliotheken nutzen zu können, müssen die passenden Treiber installiert werden. Am einfachsten lässt sich dies durch die Arduino IDE und das zuvor erwähnte Microchip Studio realisieren. Das \textbf{Flashen}, also das Aufspielen der Programme auf das Board, erfolgt über USB.
 \paragraph{Programmaufbau}
@@ -480,4 +488,192 @@ int main(void)
 \end{itemize}
 \item Erweitern Sie das dargestellte Programm so, dass nun zwei LEDs invers zueinander hoch- bzw. heruntergedimmt werden. Die eine LED soll folglich genau dann am stärksten leuchten, wenn die andere nicht leuchtet. Begründen Sie Ihre Ansätze.
 \end{enumerate}
+\pagebreak
+\part{Serielle Schnittstellen}
+In diesem Kapitel wollen wir uns kurz und bündig mit seriellen Schnittstellen beschäftigen. Serielle Schnittstellen nutzen wir, um zwischen Geräten auf einfache und kostengünstige Weise zu kommunizieren. Eine bekannte serielle Schnittstelle, die nicht mehr aus unserem Alltag wegzudenken ist, ist USB (Universal Serial Bus). \\
+Auch Entwicklungsboards haben serielle Schnittstellen:
+\begin{itemize}
+\item \textbf{USART}
+\item \textbf{USB}
+\end{itemize}
+Auf unserem Arduino-Board finden wir die Bezeichnungen {\glqq}RX{\grqq} und {\glqq}TX{\grqq} an den Ports 0 bzw. 1. Dabei steht RX für Receiver und TX für Transmitter. Halten wir also fest: Die serielle Übertragung erfolgt über mindestens zwei Leiter und ist duplex. In der Praxis wird neben beiden Leitern ein zusätzlicher Masse-Leiter verwendet.
+\paragraph{Art der Übertragung}
+Bei der seriellen Übertragung gibt die Pulsweite an, ob eine 0 oder eine 1 versendet und empfangen wird. Den Start und das Ende der Kommunikation wird durch Start- und Stop-Bits indiziert.
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.8]{Serial.png}
+\caption{Beispielhafte Serielle Kommunikation}
+\end{figure}
+Ein Start-Bit wird durch den Abfall der Spannung gekennzeichnet, ein Stop-Bit durch den Wiederanstieg und das konstante Halten der Spannung auf 5 V. \\\\
+Die Übertragungsgeschwindigkeit wird durch die \textbf{Baudrate} angegeben. Wichtig ist, dass diese Rate auf beiden teilnehmenden Geräten gleich konfiguriert ist. Ein typischer Wert ist 9600. Desto kleiner die Rate gewählt wird, desto sicherer ist die Übertragung. Für den ATmega328P stellen wir die Rate über die Register \textbf{UBRR0H} und \textbf{UBBR0L} ein.
+\\
+\begin{note}
+Auf die Angabe eines Beispielprogramms wird aus Zeitgründen und aufgrund einer vermutlich verringerten Klausurrelevanz verzichtet. Falls Sie ein Beispielprogramm entwickelt haben, können Sie es gerne an dieser Stelle einfügen! Danke!
+\end{note}
+\pagebreak
+\part{Programmieren in C}
+\begin{flushright}
+{\glqq}Aber hatten wir da nicht schon eine Vorlesung im ersten Semester zu?{\grqq}
+\end{flushright}
+Ja, die hatten wir. Ich denke, ich spreche nicht nur für mich, wenn ich sage, dass davon entweder vieles wieder weggenebelt ist oder auf sonderbare andere Weise nicht den Eingang in unsere Köpfe gefunden hat. Also gehen wir an dieser Stelle auf einige, relevante Charakteristika der Programmiersprache ein.
+\section{Modularisierung}
+Ein durchaus relevantes Prinzip der modernen Programmierung ist jenes der Wiederverwertbarkeit und Modularisierung. Wir lagern Funktionen, die wir häufiger aufrufen, die in sich abgeschlossen sind oder die für andere Projekte relevant sein könnten, in Modulen aus. 
+\subsection{Verwendung nicht definierter Funktionen} 
+Wenn wir in C eine Funktion aufrufen, die bis dato weder definiert noch mit einem Funktionsprototypen {\glqq}vorangekündigt{\grqq} wurde, legt C ein eigenwilliges Verhalten an den Tag -- es interpretiert die Funktion als eine mit einem Integer als Rückgabewert. Wenn nun nach dem Funktionsaufruf die eigentliche Definition der Funktion nun nicht den Rückgabetyp Integer hat, erhalten wir eine Compiler-Fehlermeldung, da hier eine Funktion neu definiert wurde. Diesem Verhalten beugen wir vor, indem wir einen Funktionsprototypen vor dem Aufruf angeben.
+\begin{lstlisting}[language=C]
+#include <stdio.h>
+#include <stdlib.h>
+
+void calculateStuff(int);
+
+int main(int argc, char **argv) 
+{
+	calculateStuff(int);
+}
+
+void calculateStuff (int x) 
+{
+	// some crazy operations
+}
+\end{lstlisting}
+
+\subsection{Auslagern in Module}
+Ebenso können wir auch ganze Module bilden, in denen wir Funktionen, Konstanten und Variablen programmieren und diese nun verfügbar machen. Liegt eine weitere C-Datei neben der, die wir gerade verwenden, in unserem Verzeichnis und ist darin eine Funktion enthalten, die wir in unserer Hauptdatei aufrufen, so müssen wir diese weitere C-Datei nicht einmal einbinden. Die Funktion steht uns auch so zur Verfügung. \\\\
+Eleganter jedoch ist der Weg über \texttt{.h}-Dateien: Hier definieren wir alle Funktionsprototypen und alle Konstanten, die wir auslagern wollen. Die Definitionen der Funktionen sollten wir hier nicht angeben. Zu der Header-Datei erstellen wir eine zwingend gleichnamige C-Datei, in der die Funktionsrümpfe aller Funktionen enthalten sind. Nun können wir in allen weiteren Dateien unser Modul mittels der Präprozessor-Direktive \texttt{include} einbinden.
+\begin{lstlisting}[language=C]
+#include "someMoreFunctions.h"
+\end{lstlisting}
+\section{Speicherorganisation}
+Der Speicher eines C-Programms wird als \textbf{Heap} bezeichnet. Dieser folgt dabei folgendem Aufbau:
+\subsection{Allgemeiner Aufbau}
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}
+\begin{scope}[every node/.style={block2}]
+    \node[minimum height=3\smallestHeight] (second) {Datensegment};
+    \node[minimum height=7\smallestHeight,below=of second] (first) {freier Heap-Speicher};
+    \node[minimum height=3\smallestHeight,below=of first] (fourth) {Stack};
+    \node[minimum height=3\smallestHeight,above=of second] (third) {Codesegment};
+\end{scope}
+\end{tikzpicture}
+\caption{Speicherorganisation eines C-Programms}
+\end{figure}
+Die einzelnen Bereiche beinhalten verschiedene, unterschiedliche Daten:
+\begin{itemize}
+\item \textbf{Codesegment} -- Hier sind die Anweisungen und Konstanten des Programms gespeichert. Auf unserem Entwicklungsboard befindet sich dieses Segment im \textbf{Flash}-Speicher.
+\item \textbf{Datensegment} -- Hier sind globale, modulglobale und spezielle lokale Variablen gespeichert. Die Realisierung auf der Hardware erfolgt im SRAM.
+\item \textbf{Stack} -- Im Stack befinden sich sogenannte \textbf{Stackframes} für jeden Unterprogrammaufruf. Der Stackpointer zeigt initial auf RAMEND, also das Ende des RAMs. Mit jedem zusätzlichen Stackframe wird der Pointer dekrementiert.
+\end{itemize}
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}
+\begin{scope}[every node/.style={block2}]
+    \node[minimum height=1cm] (second) {Lokale Variablen};
+    \node[minimum height=1cm,below=of second] (first) {Rücksprungadresse};
+    \node[minimum height=1cm,above=of second] (third) {Parameter};
+\end{scope}
+\end{tikzpicture}
+\caption{Aufbau eines Stackframes}
+\end{figure}
+Ein Stackframe wird für jeden Unterprogrammaufruf auf den Stack gelegt, also auch für rekursive Aufrufe. Das {\glqq}Auflegen{\grqq} ist dabei wörtlich zu nehmen -- Ein Stack wächst von unten nach oben und erweitert sich also auch dadurch, dass der freie Heap-Speicher schrumpft. Eine Stack-Overflow-Exception erhalten wir, wenn diese Ausdehnung über den verfügbaren Speicher herausgeht oder unser Programmierproblem so spezifisch ist, dass das Internet keine Lösung dafür kennt ... Sad life.
+\subsection{Zugriff}
+Es macht einen signifikanten Unterschied, an welcher Stelle eines C-Programms wir eine Variable definieren. Wir wollen ein paar Arten nennen und erläutern:
+\begin{itemize}
+\item \textbf{lokal} -- Definieren wir eine Variable innerhalb einer Funktion, so ist diese nur von dieser Funktion aus referenzierbar. Im Speicher befindet sie sich im Stackframe der entsprechenden Prozedur. Mit Abschluss des Funktionsaufrufs verschwindet sie genauso wie der restliche Inhalt des Stackframes aus dem Speicher.
+\begin{lstlisting}[language=C]
+// ...
+void doSomething() 
+{
+	int a = 10;
+}
+\end{lstlisting}
+\item \textbf{lokal, aber static} -- Verändern wir die obige Variablendeklaration durch den Modifizierer \texttt{static}, sorgen wir dafür, dass diese Variable zwar weiterhin lokal sichtbar bleibt, jedoch im Datensegment gespeichert wird. Dieses Verhalten können wir uns beispielweise in rekursiven Prozeduren zunutze machen, um dennoch einen gemeinsamen Zähler verwenden zu können.
+\begin{lstlisting}[language=C]
+// ...
+void doSomething() 
+{
+	static int a = 10;
+}
+\end{lstlisting}
+\item \textbf{modulglobal} -- Eine andere Bedeutung des Modifizierers \texttt{static} ergibt sich, wenn wir jenen auf globale Variablen oder Funktionen anwenden: Wir erreichen dadurch, dass die betreffenden Daten modulglobal sind, also von allen Funktionen des Moduls referenziert werden können, jedoch nicht von außerhalb. 
+\begin{lstlisting}[language=C]
+#include <stdlib.h>
+
+static int bufferLength = 10;
+
+int main() 
+{
+	// Some code execution
+}
+static void doSomething() 
+{
+	// Some more crazy code
+}
+\end{lstlisting}
+\item \textbf{global} -- Die letzte Form ist die der globalen Zugriffsmöglichkeit. Hierbei sind die so gekennzeichneten Variablen und Funktionen von jedem Modul und jeder Datei innerhalb des Projektes referenzierbar. Eine Deklaration als global sollte so selten wie möglich eingesetzt werden und erfolgt durch die Notation außerhalb von Funktionen auf der ersten Ebenen des Programms.
+\begin{lstlisting}[language=C]
+#include <stdlib.h>
+int bufferLength = 10;
+
+int main() 
+{
+	// Some code execution
+}
+\end{lstlisting}
+\item \textbf{register} -- Mit dieser Anweisung erreichen wir, dass lokale Variablen anstelle des Stacks in ein Prozessorregister geschrieben werden. Wir erreichen dadurch einen ähnlichen Effekt wie durch \texttt{static}.
+\begin{lstlisting}[language=C]
+// Some code
+void deleteInternet() 
+{
+	register int x = 10;
+}
+\end{lstlisting}
+\end{itemize}
+\section{Pointer}
+Ein weiteres, wichtiges Konzept sind Pointer. Ein Pointer gibt die Adresse des Datenobjektes zurück, auf den er zeigt. Pointer brauchen wir nicht nur, um Call-by-Reference-Aufrufe umzusetzen, sondern auch für viele Zugriffe direkt.
+Wir erhalten die Adresse eines Objektes durch den Operator \texttt{\&}.
+\begin{lstlisting}[language=C]
+int a = 10;
+int* ptr;
+ptr = &a;
+\end{lstlisting}
+Wenn wir nun den Wert zu einem Pointer ermitteln wollen, nutzen wir dafür den Operator \texttt{*}. Ja, dieses Sternchen hat tatsächlich zwei Bedeutungen.
+\begin{lstlisting}[language=C]
+int a = 10;
+int* ptr;
+ptr = &a;
+int b = *ptr; 	// b = 10
+\end{lstlisting}
+\subsection{Felder}
+Ein Feld (oder Array) sollte als Datenstruktur bekannt sein. Wir kennen den Zurgiff auf Feldelemente über eckige Klammern, nun wollen wir jedoch auch Pointer hierfür nutzen.
+\begin{lstlisting}[language=C]
+double field[3] = {10, 20, 30};
+
+// Assign second field value to variable secVal
+double secVal = feld[1];		
+
+// Get pointer to field
+double* myPtr = field;
+
+// Get pointer to second argument of field
+double * secValPtr = feld + 1;
+\end{lstlisting}
+Wir erkennen in der letzten Zeile einen eigentümliche Eigenschaft: Hier wird nich die Adresse des Feldes um 1 erhöht und als Pointer abgelegt, sondern stattdessen wird das zweite Feldobjekt erfolgreich referenziert. Dies ist die sogenannte \textbf{Pointer-Arithmetik}. Implizit wird an die hier stehende 1 \texttt{* sizeof(double)} angefügt, um um eine Doublegröße im Speicher weiterzuspringen. \\\\
+Felder und Pointer sind dennoch nicht äquivalent, da Felder eine Datenbasis haben. Direkt können Felder nicht an Funktionen übergeben werden, sondern nur Referenzen auf Felder, da ansonsten bei großen Feldern die Gefahr eines Stack-Overflows droht. Daraus folgt auch, dass das Kopieren eines Strings oder Feldes ein wenig komplizierter ist als in anderen Programmiersprachen:
+\begin{lstlisting}[language=C]
+char* stringcopy(char* source, char* destination) 
+{
+	while (*destination++ = *source++) {}
+}
+\end{lstlisting}
+Ein alternativer Weg dazu wäre, über \texttt{malloc()} Speicher im Heap zu reservieren, der jedoch am Ende aufgrund des fehlenden Garbage-Collectors wieder freigegeben werden müsste.
+\subsection{Doppelpointer}
+Wenn wir noch einen kurzen Blick auf die Funktionssignatur der \texttt{main}-Methode wagen, finden wir dort einen Doppelpointer:
+\begin{lstlisting}[language=C]
+int main(int argc, char** argv) 
+{
+	// ...
+}
+\end{lstlisting}
+Bei \texttt{argv} handelt es sich folglich um ein Array von Pointern, in dem die Argumente des Programms gespeichert sind. Der erste Eintrag beinhaltet den Programmnamen.
 \end{document}
