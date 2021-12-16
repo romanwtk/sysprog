@@ -656,7 +656,7 @@ double secVal = field[1];
 double* myPtr = field;
 
 // Get pointer to second argument of field
-double * secValPtr = feld + 1;
+double * secValPtr = field + 1;
 \end{lstlisting}
 Wir erkennen in der letzten Zeile einen eigentümliche Eigenschaft: Hier wird nich die Adresse des Feldes um 1 erhöht und als Pointer abgelegt, sondern stattdessen wird das zweite Feldobjekt erfolgreich referenziert. Dies ist die sogenannte \textbf{Pointer-Arithmetik}. Implizit wird an die hier stehende 1 \texttt{* sizeof(double)} angefügt, um um eine Doublegröße im Speicher weiterzuspringen. \\\\
 Felder und Pointer sind dennoch nicht äquivalent, da Felder eine Datenbasis haben. Direkt können Felder nicht an Funktionen übergeben werden, sondern nur Referenzen auf Felder, da ansonsten bei großen Feldern die Gefahr eines Stack-Overflows droht. Daraus folgt auch, dass das Kopieren eines Strings oder Feldes ein wenig komplizierter ist als in anderen Programmiersprachen:
