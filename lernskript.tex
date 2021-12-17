@@ -677,4 +677,90 @@ int main(int argc, char** argv)
 }
 \end{lstlisting}
 Bei \texttt{argv} handelt es sich folglich um ein Array von Pointern, in dem die Argumente des Programms gespeichert sind. Der erste Eintrag beinhaltet den Programmnamen.
+\subsection{Funktionspointer}
+Auch eine Funktion ist ein Objekt, zu dem wir einen Pointer definieren können.
+\begin{lstlisting}[language=C]
+int theOneandOnlyNumber() 
+{
+	return 42;
+}
+
+int main() 
+{
+	int number = theOneandOnlyNumber;
+}
+\end{lstlisting}
+\texttt{number} ist nun ein Pointer, der auf die entsprechende Funktion zeigt (und somit die Adresse der Funktion als Wert enthält). Wir stellen somit fest, dass auch die runden Klammern ein Dereferenzierungsoperator sind. Hierbei ist jedoch zu beachten, dass Folgendes nicht funktionieren wird:
+\begin{lstlisting}[language=C]
+number();
+\end{lstlisting}
+Auch wenn es der Logik von Pointern und Funktionen folgen würde, gehen beim Cast der Funktion auf den Typ Integer wichtige Meta-Informationen verloren, die jedoch zur Ausführung der Funktion benötigt werden. \\
+Wir behelfen uns, in dem wir einen neuen Datentyp definieren:
+\begin{lstlisting}[language=C]
+typedef int(*IntFuncPtr)();
+IntFuncPtr number = theOneandOnlyNumber;
+\end{lstlisting}
+Nach gleichem Vorgehen können wir auch Felder von Funktionspointern definieren und beispielsweise iterativ nutzen.
+\pagebreak
+\part{Analoge Schnittstelle}
+Bisher haben wir in der Hauptsache digitale Pins des Microcontrollers genutzt. Wir haben gesehen, dass wir dort mit Rechtecksignalen arbeiten, die wir über einen Timer in ihrer Pulsweite modulieren können, um beispielsweise eine LED zu dimmen. 
+\section{Analoge Signale}
+Während wir uns durch PWM damit begnügt haben, die Spannung durch eine Frequenz gesteuert zu unterbrechen und erneut anzulegen, um sie insgesamt zu verringern (oder augenscheinlich verringert aussehen zu lassen), gibt es auch die Möglichkeit der analogen Signale. Ein analoges Signal kann eine von 5 V verschiedene Spannung haben, um so ebenfalls eine LED zu dimmen oder anzuzeigen, wie schnell ein Servo rotiert. \\
+Die Microcontroller, die wir hier behandeln, können keine analogen Signale ausgeben, lediglich einlesen und das wollen wir im Folgenden tun. Dazu unterscheiden wir die beiden Bauteile \textbf{Analog Comparator} und \textbf{Analog-to-Digital-Converter}.
+\subsection{Analog Comperator}
+Der Analog Comparator vergleicht zwei analoge Spannungen. Je nachdem, ob die Referenz- oder Vergleichsspannung größer als die andere ist, wird ein Ausgabebit gesetzt. Die Steuerung des Comparators erfolgt wie üblich über entsprechende Register und die Abfrage kann sowohl über Polling als auch über Interrupts erfolgen. \\
+\begin{note}
+Dieser Baustein spielte in der Vorlesung eine sehr untergeordnete Rolle und ist daher vermutlich nicht klausurrelevant. Legen Sie den Fokus auf den nun folgenden Abschnitt.
+\end{note}
+\subsection{Analog-Digital-Converter}
+Viel eher als zwei Werte zu vergleichen, sind wir daran interessiert, ein analoges Signal in ein digitales umzuwandeln. Dieser Aufgabe kommt dieser Baustein nach. 
+\paragraph{Eingänge} Die Mikrocontroller und Entwicklungsboards haben acht analoge Eingangspins, auf dem Diagramm \ref{pins} jeweils gekennzeichnet mit \textbf{ADC0 -- ADC7}. An den Pins, von denen wir lesen wollen, erwarten wir nun eine Spannung zwischen 0 und 5 V.
+\paragraph{Einlesen} Beim Lesen der Spannung gibt es zwei mögliche Auflösungen: 8 oder 10 Bit. Je nachdem kann die Spannung viermal präziser bzw. viermal grober angegeben werden. Grundsätzlich werden immer alle 10 verfügbaren Bits mit Daten befüllt. Entscheiden wir uns für die 8-Bit-Auflösung, ignorieren wir einfach die 2 niedersten Bits. Da ein Register nur acht Bit umfasst, werden die Daten in zwei Registern, namentlich \textbf{ADCH} und \textbf{ADCL} gespeichert. Mit dem \textbf{ADLAR}-Bit im ADMUX-Register legen wir fest, in welchem Register begonnen wird.
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.7]{adcreg.PNG}
+\caption{Ergebnis-Register in Abhängigkeit zu ADLAR}
+\end{figure}
+\begin{note}
+Wichtig ist, immer zuerst das \textbf{ADCL}-Register auszulesen! Das ADCH-Register beeinflusst die Werte beim Lesen.
+\end{note}
+Sollten wir nun alle 10-Bits auslesen wollen, setzen wir das ADLAR-Bit idealerweise auf 0.
+\paragraph{Prescaler} Wie bei den Timern verwenden wir auch für den A/D-Converter einen Prescaler, um dem Converter mehr Zeit zum Rechnen zu verschaffen. Der Prescaler wird idealerweise auf 128 bei 16 MHz-Systemen gesetzt. \\\\
+Die Ausgabe und Verarbeitung des Signals kann nun über Interrupt-Service-Routinen (ISRs) erfolgen. Der Bezeichner dafür lautet \texttt{ADC{\_}vect}. \\
+\begin{note}
+Auf die ausführliche Darstellung von Quellcode verzichte ich an dieser Stelle aus Zeitgründen. Verwiesen sei auf das \href{https://github.com/LimagoHub/systemnahe-programmierung-dhbw-dezember-2021}{Repository des Dozenten}.
+\end{note}
+\pagebreak
+\part{Mögliche Klausurfragen}
+Nun folgt eine Auflistung möglicher Klausurfragen, die jedoch allesamt meiner Feder entstammen und daher keinen Bezug zu den tatsächlich kommenden Fragen haben müssen.
+\section{Microcontroller}
+\begin{enumerate}
+\item Erläutern Sie den Unterschied zwischen Microcontroller und Microprozessor.
+\item Wo befindet sich das Betriebssystem des Chips?
+\begin{enumerate}
+\item Flash
+\item EEPROM
+\item SRAM
+\item in keiner der oberen Optionen
+\end{enumerate}
+\item Was passiert beim Flashen eines Programms?
+\begin{enumerate}
+\item Das Programm wird über eine parallele Schnittstelle auf den Microcontroller übertragen und in den Flash-Speicher gebrannt.
+\item Das Programm wird über eine serielle Schnittstelle auf den Microcontroller übertragen und in den Flash-Speicher gebrannt.
+\item Das Programm wird über eine serielle Schnittstelle auf den Microcontroller übertragen und in den EEPROM-Speicher gebrannt.
+\item Das Programm wird über eine parallele Schnittstelle auf den Microcontroller übertragen und im SRAM abgelegt.
+\end{enumerate}
+\item Was verbirgt sich hinter USART?
+\begin{enumerate}
+\item Ein Protokoll zur seriellen Kommunikation
+\item Ein Protokoll zur Kommunikation zwischen Prozessor und Speicherbauteilen
+\item Eine Schnittstelle zur seriellen Kommunikation
+\item Ein persistenter Speicherbaustein
+\end{enumerate}
+\item Erläutern Sie die Eigenschaften einer RISC-Architektur.
+\item Nennen Sie abgesehen vom Prozessor fünf weitere Bauteile eines Microcontrollers.
+\end{enumerate}
+\begin{note}
+Schreibt hier gerne weiter! Desto mehr Fragen, desto besser!
+\end{note}
 \end{document}
