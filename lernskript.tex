@@ -65,7 +65,9 @@ Mannheim, den \today
 \paragraph{Fehlerfinden}
 Mein Dank gilt folgenden Personen, die Fehler gefunden, korrigiert und so dieses Skript verbessert haben: 
 \begin{itemize}
+\item Arne Kapell
 \item Daniel Riebel
+\item David Kneller
 \item Finn Callies
 \item Finn Pabst
 \item Gurleen Kaur Saini
@@ -379,9 +381,9 @@ int main(void)
 	PORTB = 0xFF;		// Schaltet alle B-Ports ein 
 	
 	DDRD &= ~(1 << DDD2); 	// D2 wird Eingang
-	PORTD |= (1 << PORTD2);	// An D2 wird der Pull-Up-Wiederstand aktiviert
+	PORTD |= (1 << PORTD2);	// Pull-Up-Widerstand an D2 aktivieren
 	DDRD &= ~(1 << DDD3);	// D3 wird Eingang
-	PORTD |= (1 << PORTD3);	// An D3 wird der Pull-Up-Wiederstand aktiviert
+	PORTD |= (1 << PORTD3);	// Pull-Up-Widerstand an D3 aktivieren
 	
 	EICRA |= (1 << ISC00);	// INT0 triggert bei Pegelwechsel
 	EICRA |= (1 << ISC10);	// INT1 triggert bei Pegelwechsel
