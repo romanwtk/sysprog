@@ -379,9 +379,9 @@ int main(void)
 	PORTB = 0xFF;		// Schaltet alle B-Ports ein 
 	
 	DDRD &= ~(1 << DDD2); 	// D2 wird Eingang
-	PORTD |= (1 << PORTD2);	// An D2 wird Spannung angelegt
+	PORTD |= (1 << PORTD2);	// An D2 wird der Pull-Up-Wiederstand aktiviert
 	DDRD &= ~(1 << DDD3);	// D3 wird Eingang
-	PORTD |= (1 << PORTD3);	// An D3 wird Spannung angelegt
+	PORTD |= (1 << PORTD3);	// An D3 wird der Pull-Up-Wiederstand aktiviert
 	
 	EICRA |= (1 << ISC00);	// INT0 triggert bei Pegelwechsel
 	EICRA |= (1 << ISC11);	// INT1 triggert bei Pegelwechsel
