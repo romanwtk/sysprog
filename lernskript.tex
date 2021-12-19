@@ -384,7 +384,7 @@ int main(void)
 	PORTD |= (1 << PORTD3);	// An D3 wird Spannung angelegt
 	
 	EICRA |= (1 << ISC00);	// INT0 triggert bei Pegelwechsel
-	EICRA |= (1 << ISC11);	// INT1 triggert bei Pegelwechsel
+	EICRA |= (1 << ISC10);	// INT1 triggert bei Pegelwechsel
 	EIMSK |= (1 << INT0);	// INT0 wird scharf
 	EIMSK |= (1 << INT1);	// INT1 wird scharf
 	
